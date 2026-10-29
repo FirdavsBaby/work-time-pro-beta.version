@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id          String      @id @default(uuid())
+  name        String
+  position    String
+  email       String?     @unique
+  status      String      @default("active") // "active" | "archived"
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  timeEntries TimeEntry[]
+
+  @@index([status])
+  @@map("employees")
+}
+
+model TimeEntry {
+  id              String    @id @default(uuid())
+  employeeId      String
+  employee        Employee  @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  taskTitle       String
+  description     String?
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  pausedAt        DateTime?
+  pausedSeconds   Int       @default(0)
+  durationSeconds Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([startedAt])
+  @@index([endedAt])
+  @@index([employeeId, endedAt])
+  @@map("time_entries")
+}
